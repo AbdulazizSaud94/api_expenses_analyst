@@ -16,16 +16,32 @@ def index():
     # df = pd.read_json(js)
     df = pd.DataFrame.from_records(js)
     df = df.drop([0])
-    print(df)
     maxim = df['amount'].astype(int).max()
     mini = df['amount'].astype(int).min()
     mean = df['amount'].astype(int).mean()
-    res = json.dumps({
-        "maximum": f"{maxim}",
-        "minimum": f"{mini}",
-        "mean": f"{mean}",
-    }, indent=4)
-    print(type(res))
+
+    gb = df.groupby("type")
+
+
+    # print(sd)
+    types = []
+    typeSpend = {}
+    for name, group in df.groupby("type"):
+        types.append(name)
+    for type in types:
+        sd = gb.get_group(type)
+        amount = sd['amount'].astype(int).max()
+        typeSpend[type] = f'{amount}'
+    print(typeSpend)
+
+    print(types)
+
+    res = {
+        'maximum': f'{maxim}',
+        'minimum': f'{mini}',
+        'mean': f'{mean}',
+        'type': typeSpend,
+    }
     return res
 
 
