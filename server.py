@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 import json
 from flask import jsonify
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 app = Flask(__name__)
 
@@ -16,31 +18,32 @@ def index():
     # df = pd.read_json(js)
     df = pd.DataFrame.from_records(js)
     df = df.drop([0])
-    maxim = df['amount'].astype(int).max()
-    mini = df['amount'].astype(int).min()
-    mean = df['amount'].astype(int).mean()
+    df['amount'] = df['amount'].astype(int)
+
+    maxim = df['amount'].max()
+    mini = df['amount'].min()
+    mean = df['amount'].mean()
 
     gb = df.groupby("type")
 
+    gf = df.groupby(["type"]).sum().sort_values("amount", ascending=False)
+
+    print(gf)
 
     # print(sd)
     types = []
     typeSpend = {}
     for name, group in df.groupby("type"):
         types.append(name)
-    for type in types:
-        sd = gb.get_group(type)
-        amount = sd['amount'].astype(int).max()
-        typeSpend[type] = f'{amount}'
-    print(typeSpend)
-
-    print(types)
+   
+    print(gf)
+    gf_js = gf.to_dict('dict')
 
     res = {
         'maximum': f'{maxim}',
         'minimum': f'{mini}',
         'mean': f'{mean}',
-        'type': typeSpend,
+        'typeSpent': gf_js,
     }
     return res
 
