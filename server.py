@@ -19,6 +19,8 @@ def index():
     df = pd.DataFrame.from_records(js)
     df = df.drop([0])
     df['amount'] = df['amount'].astype(int)
+    df["date"]= pd.to_datetime(df["date"]) 
+
 
     maxim = df['amount'].max()
     mini = df['amount'].min()
@@ -28,22 +30,31 @@ def index():
 
     gf = df.groupby(["type"]).sum().sort_values("amount", ascending=False)
 
+    df['YearMonth'] = pd.to_datetime(df['date']).apply(lambda x: '{month}-{year}'.format(year=x.year, month=x.day))
+
+    # monthly = df.groupby('YearMonth')['amount'].sum()
+
+    monthly =df.groupby(["YearMonth"]).sum().sort_values("amount", ascending=False)
+
+    print(monthly)
     print(gf)
 
-    # print(sd)
     types = []
     typeSpend = {}
-    for name, group in df.groupby("type"):
-        types.append(name)
+    # for name, group in df.groupby("type"):
+    #     types.append(name)
    
-    print(gf)
-    gf_js = gf.to_dict('dict')
+    type_js = gf.to_dict('dict')
+    month_js = monthly.to_dict('dict')
+
+
 
     res = {
         'maximum': f'{maxim}',
         'minimum': f'{mini}',
         'mean': f'{mean}',
-        'typeSpent': gf_js,
+        'typeBased': type_js,
+        'monthBased': month_js,
     }
     return res
 
