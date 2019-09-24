@@ -38,27 +38,41 @@ def index():
 
     max_amount = date_amount[date_amount.amount == date_amount.amount.max()]
 
-    df['YearMonth'] = pd.to_datetime(df['date']).apply(
-        lambda x: '{month}-{year}'.format(year=x.year, month=x.month))
+    df['YearMonth'] = pd.to_datetime(df['date']).apply(lambda x: '{month}-{year}'.format(year=x.year, month=x.month))
+    df['month'] = pd.to_datetime(df['date']).apply(lambda x: '{month}'.format( month=x.month))
+    df['year'] = pd.to_datetime(df['date']).apply(lambda x: '{year}'.format( year=x.year))
+
+
     # monthly = df.groupby('YearMonth')['amount'].sum()
 
-    monthly = df.groupby(["YearMonth"]).sum(
+    monthlyYear = df.groupby(["YearMonth"]).sum(
     ).sort_values("amount", ascending=False)
 
-    print(gf)
+    monthly = df.groupby(["month"]).sum(
+    ).sort_values("amount", ascending=False)
+
+    year = df.at[1, 'year']
+
+
+
+ 
+    print(df)
     type_js = gf.to_dict('dict')
     month_js = monthly.to_dict('dict')
     percentage = perc.to_dict('dict')
+    yearMonth = monthlyYear.to_dict('dict')
     # max_spend_js = max_amount.to_dict('dict')
 
     res = {
-        # 'maximum': max_spend_js,
+        'year': f'{year}',
+        'maximum': f'{maxim}',
         'minimum': f'{mini}',
         'sum': f'{sumi}',
         'median': f'{median}',
         'mean': f'{mean}',
         'typeBased': type_js,
         'monthBased': month_js,
+        'monthlyYear': yearMonth,
     }
     return res
 
