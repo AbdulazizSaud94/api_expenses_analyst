@@ -10,16 +10,13 @@ app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
 def index():
-    # print (request.data)
     res = request.data
 
     res = str(res, 'utf-8')
     js = json.loads(res)
-    # df = pd.read_json(js)
     df = pd.DataFrame.from_records(js)
     df = df.drop([0])
     df['amount'] = df['amount'].astype(int)
-    # df['income'] = df['income'].astype(int)
     df["date"] = pd.to_datetime(df["date"])
 
     maxim = df.amount.max()
@@ -36,14 +33,24 @@ def index():
     date_amount = df.groupby(["date"]).sum(
     ).sort_values("amount", ascending=False)
 
-    max_amount = date_amount[date_amount.amount == date_amount.amount.max()]
+    max_row = df.loc[df['amount'].idxmax()]
+    max_row = max_row[['type', 'date', 'amount']]
+    max_row = max_row.rename('maxSpend')
+    max_row = max_row.to_frame()
 
-    df['YearMonth'] = pd.to_datetime(df['date']).apply(lambda x: '{month}-{year}'.format(year=x.year, month=x.month))
-    df['month'] = pd.to_datetime(df['date']).apply(lambda x: '{month}'.format( month=x.month))
-    df['year'] = pd.to_datetime(df['date']).apply(lambda x: '{year}'.format( year=x.year))
+    min_row = df.loc[df['amount'].idxmin()]
+    min_row = min_row[['type', 'date', 'amount']]
+    min_row = min_row.rename('minSpend')
+    min_row = min_row.to_frame()
 
+    print(min_row)
 
-    # monthly = df.groupby('YearMonth')['amount'].sum()
+    df['YearMonth'] = pd.to_datetime(df['date']).apply(
+        lambda x: '{month}-{year}'.format(year=x.year, month=x.month))
+    df['month'] = pd.to_datetime(df['date']).apply(
+        lambda x: '{month}'.format(month=x.month))
+    df['year'] = pd.to_datetime(df['date']).apply(
+        lambda x: '{year}'.format(year=x.year))
 
     monthlyYear = df.groupby(["YearMonth"]).sum(
     ).sort_values("amount", ascending=False)
@@ -53,15 +60,16 @@ def index():
 
     year = df.at[1, 'year']
 
+    max_row = max_row.astype('str')
+    min_row = min_row.astype('str')
 
-
- 
     print(df)
     type_js = gf.to_dict('dict')
     month_js = monthly.to_dict('dict')
     percentage = perc.to_dict('dict')
     yearMonth = monthlyYear.to_dict('dict')
-    # max_spend_js = max_amount.to_dict('dict')
+    maxSpend = max_row.to_dict('dict')
+    minSpend = min_row.to_dict('dict')
 
     res = {
         'year': f'{year}',
@@ -73,6 +81,8 @@ def index():
         'typeBased': type_js,
         'monthBased': month_js,
         'monthlyYear': yearMonth,
+        'maxSpend': maxSpend,
+        'minSpend': minSpend,
     }
     return res
 
