@@ -34,16 +34,15 @@ def index():
     ).sort_values("amount", ascending=False)
 
     max_row = df.loc[df['amount'].idxmax()]
+    max_row['date'] = pd.to_datetime(max_row['date'])
+    max_row['date']= max_row['date'].strftime('%d/%m/%Y')
     max_row = max_row[['type', 'date', 'amount']]
     max_row = max_row.rename('maxSpend')
     max_row = max_row.to_frame()
-
     min_row = df.loc[df['amount'].idxmin()]
     min_row = min_row[['type', 'date', 'amount']]
     min_row = min_row.rename('minSpend')
     min_row = min_row.to_frame()
-
-    print(min_row)
 
     df['YearMonth'] = pd.to_datetime(df['date']).apply(
         lambda x: '{month}-{year}'.format(year=x.year, month=x.month))
@@ -60,16 +59,26 @@ def index():
 
     year = df.at[1, 'year']
 
+    
+    tagetPerc = df[['category', 'target']]
+    tagetPerc.set_index(['category'], inplace=True)
+    tagetPerc.dropna(axis='columns')
+    tagetPerc.dropna(axis='rows')
+
+
     max_row = max_row.astype('str')
     min_row = min_row.astype('str')
+    tagetPerc = tagetPerc.astype('str')
 
-    print(df)
+    print(max_row)
+
     type_js = gf.to_dict('dict')
     month_js = monthly.to_dict('dict')
     percentage = perc.to_dict('dict')
     yearMonth = monthlyYear.to_dict('dict')
     maxSpend = max_row.to_dict('dict')
     minSpend = min_row.to_dict('dict')
+    tagetPerc = tagetPerc.to_dict('dict')
 
     res = {
         'year': f'{year}',
@@ -83,6 +92,7 @@ def index():
         'monthlyYear': yearMonth,
         'maxSpend': maxSpend,
         'minSpend': minSpend,
+        'targetPerc': tagetPerc,
     }
     return res
 
