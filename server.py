@@ -40,6 +40,8 @@ def index():
     max_row = max_row.rename('maxSpend')
     max_row = max_row.to_frame()
     min_row = df.loc[df['amount'].idxmin()]
+    min_row['date'] = pd.to_datetime(min_row['date'])
+    min_row['date']= min_row['date'].strftime('%d/%m/%Y')
     min_row = min_row[['type', 'date', 'amount']]
     min_row = min_row.rename('minSpend')
     min_row = min_row.to_frame()
